@@ -1,11 +1,11 @@
 [package]
 name = "autobuild"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["w2moon <w2moon@gmail.com>"]
 description = "A tool for automatic building and publishing based on git changes"
 license = "MIT"
-repository = "https://github.com/yourusername/autobuild"
+repository = "https://github.com/w2moon/autobuild"
 readme = "README.md"
 keywords = ["build", "automation", "git", "webhook"]
 categories = ["development-tools"]
