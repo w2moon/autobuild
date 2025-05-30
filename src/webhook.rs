@@ -46,6 +46,14 @@ pub async fn send_webhook(config: &WebhookConfig, status: &str, message: &str) {
         let client = reqwest::Client::new();
         let now_str = now.format("%Y-%m-%d %H:%M:%S").to_string();
         
+        // 检查 URL 是否为空
+        if config.url.is_empty() {
+            error!("Webhook URL is empty");
+            return;
+        }
+        
+        log::info!("Sending webhook to URL: {}", config.url);
+        
         let payload = json!({
             "msgtype": "text",
             "text": {
@@ -58,6 +66,7 @@ pub async fn send_webhook(config: &WebhookConfig, status: &str, message: &str) {
             .send()
             .await {
             Ok(_) => {
+                log::info!("Webhook sent successfully");
                 queue.last_sent = Some(now);
             }
             Err(e) => error!("Failed to send webhook: {}", e),

@@ -37,10 +37,24 @@ impl Default for Config {
 
 pub fn load_config(config_path: Option<&str>) -> anyhow::Result<Config> {
     let config = if let Some(path) = config_path {
+        log::info!("Loading config from specified file: {}", path);
         let content = std::fs::read_to_string(path)?;
-        serde_json::from_str(&content)?
+        let config: Config = serde_json::from_str(&content)?;
+        log::info!("Loaded config: {:?}", config);
+        config
     } else {
-        Config::default()
+        // 尝试加载当前目录下的 autobuild.json
+        let default_path = "autobuild.json";
+        if std::path::Path::new(default_path).exists() {
+            log::info!("Loading config from default file: {}", default_path);
+            let content = std::fs::read_to_string(default_path)?;
+            let config: Config = serde_json::from_str(&content)?;
+            log::info!("Loaded config: {:?}", config);
+            config
+        } else {
+            log::info!("No config file found, using default config");
+            Config::default()
+        }
     };
     Ok(config)
 }
