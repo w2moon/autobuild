@@ -8,12 +8,23 @@ use clap::Parser;
 use log::{info, error};
 use std::time::Duration;
 use tokio::time;
+use std::fs;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
     config: Option<String>,
+    
+    #[arg(long)]
+    init: bool,
+}
+
+fn create_default_config() -> Result<()> {
+    let config = serde_json::to_string_pretty(&config::Config::default())?;
+    fs::write("autobuild.json", config)?;
+    info!("已创建默认配置文件 autobuild.json");
+    Ok(())
 }
 
 #[tokio::main]
@@ -21,6 +32,12 @@ async fn main() -> Result<()> {
     env_logger::init();
     
     let args = Args::parse();
+    
+    if args.init {
+        create_default_config()?;
+        return Ok(());
+    }
+    
     let config = config::load_config(args.config.as_deref())?;
     
     info!("Starting autobuild with config: {:?}", config);
@@ -29,7 +46,8 @@ async fn main() -> Result<()> {
         match git::check_and_pull(
             config.repository.to_str().unwrap(),
             &config.branch,
-        ) {
+            &config.webhook,
+        ).await {
             Ok(true) => {
                 // 有更新，执行构建和发布
                 if let Err(e) = builder::execute_command(&config.build, &config.webhook).await {

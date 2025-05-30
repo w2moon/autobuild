@@ -5,6 +5,7 @@ use std::path::PathBuf;
 pub struct WebhookConfig {
     pub url: String,
     pub prefix: String,
+    pub message_interval: u64,  // 消息聚合时间间隔（秒）
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -28,6 +29,7 @@ impl Default for Config {
             webhook: WebhookConfig {
                 url: "".to_string(),
                 prefix: "".to_string(),
+                message_interval: 60,  // 默认60秒
             },
         }
     }

@@ -20,6 +20,13 @@ cargo install autobuild
 
 1. 创建配置文件 `autobuild.json`（可选）：
 
+```bash
+# 使用 --init 命令创建默认配置文件
+autobuild --init
+```
+
+或者手动创建配置文件：
+
 ```json
 {
   "repository": ".",

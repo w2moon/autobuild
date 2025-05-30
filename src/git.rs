@@ -1,8 +1,9 @@
 use std::process::Command;
 use anyhow::Result;
 use log::{info, error};
+use crate::config::WebhookConfig;
 
-pub fn check_and_pull(repo_path: &str, branch: &str) -> Result<bool> {
+pub async fn check_and_pull(repo_path: &str, branch: &str, webhook: &WebhookConfig) -> Result<bool> {
     // 获取当前分支的远程最新提交
     let fetch_output = Command::new("git")
         .current_dir(repo_path)
@@ -10,8 +11,10 @@ pub fn check_and_pull(repo_path: &str, branch: &str) -> Result<bool> {
         .output()?;
 
     if !fetch_output.status.success() {
-        error!("Git fetch failed: {}", String::from_utf8_lossy(&fetch_output.stderr));
-        return Err(anyhow::anyhow!("Git fetch failed"));
+        let error_msg = format!("Git fetch failed: {}", String::from_utf8_lossy(&fetch_output.stderr));
+        error!("{}", error_msg);
+        crate::webhook::send_webhook(webhook, "ERROR", &error_msg).await;
+        return Err(anyhow::anyhow!(error_msg));
     }
 
     // 获取本地分支的当前提交
@@ -27,7 +30,10 @@ pub fn check_and_pull(repo_path: &str, branch: &str) -> Result<bool> {
         .output()?;
 
     if !local_commit.status.success() || !remote_commit.status.success() {
-        return Err(anyhow::anyhow!("Failed to get commit hashes"));
+        let error_msg = "Failed to get commit hashes".to_string();
+        error!("{}", error_msg);
+        crate::webhook::send_webhook(webhook, "ERROR", &error_msg).await;
+        return Err(anyhow::anyhow!(error_msg));
     }
 
     let local_hash = String::from_utf8_lossy(&local_commit.stdout).trim().to_string();
@@ -41,11 +47,15 @@ pub fn check_and_pull(repo_path: &str, branch: &str) -> Result<bool> {
             .output()?;
 
         if !pull_output.status.success() {
-            error!("Git pull failed: {}", String::from_utf8_lossy(&pull_output.stderr));
-            return Err(anyhow::anyhow!("Git pull failed"));
+            let error_msg = format!("Git pull failed: {}", String::from_utf8_lossy(&pull_output.stderr));
+            error!("{}", error_msg);
+            crate::webhook::send_webhook(webhook, "ERROR", &error_msg).await;
+            return Err(anyhow::anyhow!(error_msg));
         }
 
-        info!("Successfully pulled new changes from {}", branch);
+        let success_msg = format!("Successfully pulled new changes from {}", branch);
+        info!("{}", success_msg);
+        crate::webhook::send_webhook(webhook, "SUCCESS", &success_msg).await;
         Ok(true)
     } else {
         Ok(false)
