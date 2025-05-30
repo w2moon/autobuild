@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Your Name <your.email@example.com>"]
 description = "A tool for automatic building and publishing based on git changes"
+license = "MIT"
+repository = "https://github.com/yourusername/autobuild"
+readme = "README.md"
+keywords = ["build", "automation", "git", "webhook"]
+categories = ["development-tools"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
