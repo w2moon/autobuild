@@ -1,31 +1,31 @@
 # Autobuild
 
-一个自动构建和发布工具，用于监控 Git 仓库变化并自动执行构建和发布命令。
+An automated build and publish tool that monitors Git repository changes and automatically executes build and publish commands.
 
-## 功能特点
+## Features
 
-- 监控指定 Git 分支的更新
-- 自动执行构建和发布命令
-- 支持钉钉 webhook 通知
-- 可配置的检查间隔时间
-- 详细的构建日志和耗时统计
+- Monitor updates on specified Git branches
+- Automatically execute build and publish commands
+- Support for DingTalk webhook notifications
+- Configurable check interval
+- Detailed build logs and time statistics
 
-## 安装
+## Installation
 
 ```bash
 cargo install autobuild
 ```
 
-## 使用方法
+## Usage
 
-1. 创建配置文件 `autobuild.json`（可选）：
+1. Create a configuration file `autobuild.json` (optional):
 
 ```bash
-# 使用 --init 命令创建默认配置文件
+# Create default configuration file using --init command
 autobuild --init
 ```
 
-或者手动创建配置文件：
+Or create the configuration file manually:
 
 ```json
 {
@@ -41,27 +41,27 @@ autobuild --init
 }
 ```
 
-2. 运行程序：
+2. Run the program:
 
 ```bash
-# 使用默认配置
+# Use default configuration
 autobuild
 
-# 指定配置文件
+# Specify configuration file
 autobuild -c path/to/autobuild.json
 ```
 
-## 配置说明
+## Configuration
 
-- `repository`: Git 仓库路径
-- `build`: 构建命令
-- `publish`: 发布命令
-- `branch`: 监控的分支
-- `interval`: 检查更新的间隔时间（秒）
-- `webhook`: 钉钉机器人配置
-  - `url`: 钉钉机器人 webhook 地址
-  - `prefix`: 消息前缀
+- `repository`: Git repository path
+- `build`: Build command
+- `publish`: Publish command
+- `branch`: Branch to monitor
+- `interval`: Check interval in seconds
+- `webhook`: DingTalk robot configuration
+  - `url`: DingTalk robot webhook URL
+  - `prefix`: Message prefix
 
-## 许可证
+## License
 
 MIT
