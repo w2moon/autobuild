@@ -1,6 +1,6 @@
 [package]
 name = "autobuild"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 authors = ["w2moon <w2moon@gmail.com>"]
 description = "A tool for automatic building and publishing based on git changes"
