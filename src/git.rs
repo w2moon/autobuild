@@ -8,13 +8,13 @@ use once_cell::sync::Lazy;
 static IS_PULLING: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 pub async fn check_and_pull(repo_path: &str, branch: &str, webhook: &WebhookConfig) -> Result<bool> {
-    // 检查是否正在进行 pull 操作
+    // Check if a pull operation is in progress
     if IS_PULLING.load(Ordering::SeqCst) {
-        info!("上一个 pull 操作还在进行中，跳过本次检查");
+        info!("Previous pull operation is still in progress, skipping this check");
         return Ok(false);
     }
 
-    // 获取当前分支的远程最新提交
+    // Get the latest commit from remote branch
     let fetch_output = Command::new("git")
         .current_dir(repo_path)
         .args(["fetch", "origin", branch])
@@ -27,13 +27,13 @@ pub async fn check_and_pull(repo_path: &str, branch: &str, webhook: &WebhookConf
         return Err(anyhow::anyhow!(error_msg));
     }
 
-    // 获取本地分支的当前提交
+    // Get the current commit of local branch
     let local_commit = Command::new("git")
         .current_dir(repo_path)
         .args(["rev-parse", "HEAD"])
         .output()?;
 
-    // 获取远程分支的最新提交
+    // Get the latest commit of remote branch
     let remote_commit = Command::new("git")
         .current_dir(repo_path)
         .args(["rev-parse", &format!("origin/{}", branch)])
@@ -50,16 +50,16 @@ pub async fn check_and_pull(repo_path: &str, branch: &str, webhook: &WebhookConf
     let remote_hash = String::from_utf8_lossy(&remote_commit.stdout).trim().to_string();
 
     if local_hash != remote_hash {
-        // 设置正在 pull 的标志
+        // Set the pulling flag
         IS_PULLING.store(true, Ordering::SeqCst);
         
-        // 有更新，执行 pull
+        // Updates available, execute pull
         let pull_output = Command::new("git")
             .current_dir(repo_path)
             .args(["pull", "origin", branch])
             .output()?;
 
-        // 无论成功与否，都重置 pull 标志
+        // Reset the pulling flag regardless of success or failure
         IS_PULLING.store(false, Ordering::SeqCst);
 
         if !pull_output.status.success() {

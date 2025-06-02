@@ -23,7 +23,7 @@ struct Args {
 fn create_default_config() -> Result<()> {
     let config = serde_json::to_string_pretty(&config::Config::default())?;
     fs::write("autobuild.json", config)?;
-    info!("已创建默认配置文件 autobuild.json");
+    info!("Created default config file autobuild.json");
     Ok(())
 }
 
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
             &config.webhook,
         ).await {
             Ok(true) => {
-                // 有更新，执行构建和发布
+                // Updates found, execute build and publish
                 if let Err(e) = builder::execute_command(&config.build, &config.webhook).await {
                     error!("Build failed: {}", e);
                     continue;

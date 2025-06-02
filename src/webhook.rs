@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use once_cell::sync::Lazy;
 use std::collections::VecDeque;
 
-// 存储待发送的消息队列和上次发送时间
+// Store message queue and last sent time
 struct MessageQueue {
     last_sent: Option<DateTime<Local>>,
     messages: VecDeque<(String, String)>,  // (status, message)
@@ -23,30 +23,30 @@ pub async fn send_webhook(config: &WebhookConfig, status: &str, message: &str) {
     let now = Local::now();
     let mut queue = MESSAGE_QUEUE.lock().unwrap();
     
-    // 将新消息添加到队列
+    // Add new message to queue
     queue.messages.push_back((status.to_string(), message.to_string()));
     
-    // 检查是否需要发送消息
+    // Check if we should send messages
     let should_send = match queue.last_sent {
         Some(last_sent) => {
             let duration = now.signed_duration_since(last_sent);
             duration >= Duration::seconds(config.message_interval as i64)
         }
-        None => true,  // 如果是第一条消息，立即发送
+        None => true,  // If this is the first message, send immediately
     };
     
     if should_send {
-        // 合并队列中的所有消息
+        // Merge all messages in queue
         let mut content = String::new();
         while let Some((status, msg)) = queue.messages.pop_front() {
             content.push_str(&format!("[{}] {}\n", status, msg));
         }
         
-        // 发送合并后的消息
+        // Send merged message
         let client = reqwest::Client::new();
         let now_str = now.format("%Y-%m-%d %H:%M:%S").to_string();
         
-        // 检查 URL 是否为空
+        // Check if URL is empty
         if config.url.is_empty() {
             error!("Webhook URL is empty");
             return;

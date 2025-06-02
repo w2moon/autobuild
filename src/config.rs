@@ -5,7 +5,7 @@ use std::path::PathBuf;
 pub struct WebhookConfig {
     pub url: String,
     pub prefix: String,
-    pub message_interval: u64,  // 消息聚合时间间隔（秒）
+    pub message_interval: u64,  // Message aggregation interval (seconds)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -29,7 +29,7 @@ impl Default for Config {
             webhook: WebhookConfig {
                 url: "".to_string(),
                 prefix: "".to_string(),
-                message_interval: 60,  // 默认60秒
+                message_interval: 60,  // Default 60 seconds
             },
         }
     }
@@ -43,7 +43,7 @@ pub fn load_config(config_path: Option<&str>) -> anyhow::Result<Config> {
         log::info!("Loaded config: {:?}", config);
         config
     } else {
-        // 尝试加载当前目录下的 autobuild.json
+        // Try to load autobuild.json from current directory
         let default_path = "autobuild.json";
         if std::path::Path::new(default_path).exists() {
             log::info!("Loading config from default file: {}", default_path);

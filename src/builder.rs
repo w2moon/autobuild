@@ -11,15 +11,15 @@ static CURRENT_PROCESS: Lazy<Mutex<Option<Child>>> = Lazy::new(|| Mutex::new(Non
 pub async fn execute_command(command: &str, webhook: &crate::config::WebhookConfig) -> Result<()> {
     let start = Instant::now();
     
-    // 取消当前正在执行的命令
+    // Cancel the currently executing command
     if let Some(mut current_process) = CURRENT_PROCESS.lock().unwrap().take() {
         let _ = current_process.kill();
-        let cancel_msg = "上一个命令已被取消";
+        let cancel_msg = "Previous command has been cancelled";
         info!("{}", cancel_msg);
         crate::webhook::send_webhook(webhook, "INFO", cancel_msg).await;
     }
 
-    let status = format!("开始执行命令: {}", command);
+    let status = format!("Starting command execution: {}", command);
     crate::webhook::send_webhook(webhook, "INFO", &status).await;
 
     let mut child = Command::new("sh")
@@ -27,20 +27,20 @@ pub async fn execute_command(command: &str, webhook: &crate::config::WebhookConf
         .arg(command)
         .spawn()?;
 
-    // 存储新的进程
+    // Store the new process
     let mut current_process = CURRENT_PROCESS.lock().unwrap();
     *current_process = Some(child);
     drop(current_process);
 
     let output = CURRENT_PROCESS.lock().unwrap().take().unwrap().wait_with_output()?;
 
-    // 清除已完成的进程
+    // Clear the completed process
     *CURRENT_PROCESS.lock().unwrap() = None;
 
     if output.status.success() {
         let duration = start.elapsed();
         let success_msg = format!(
-            "命令执行成功: {}\n耗时: {:.2}秒\n输出:\n{}",
+            "Command executed successfully: {}\nDuration: {:.2} seconds\nOutput:\n{}",
             command,
             duration.as_secs_f64(),
             String::from_utf8_lossy(&output.stdout)
@@ -50,7 +50,7 @@ pub async fn execute_command(command: &str, webhook: &crate::config::WebhookConf
         Ok(())
     } else {
         let error_msg = format!(
-            "命令执行失败: {}\n错误:\n{}",
+            "Command execution failed: {}\nError:\n{}",
             command,
             String::from_utf8_lossy(&output.stderr)
         );
