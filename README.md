@@ -49,6 +49,11 @@ autobuild
 
 # Specify configuration file
 autobuild -c path/to/autobuild.json
+
+# Force execute build and publish commands without checking git updates
+autobuild -f
+# or
+autobuild --force
 ```
 
 ## Configuration

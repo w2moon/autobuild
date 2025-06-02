@@ -18,6 +18,9 @@ struct Args {
     
     #[arg(long)]
     init: bool,
+
+    #[arg(short, long)]
+    force: bool,
 }
 
 fn create_default_config() -> Result<()> {
@@ -43,6 +46,20 @@ async fn main() -> Result<()> {
     info!("Starting autobuild with config: {:?}", config);
     
     loop {
+        if args.force {
+            info!("Force mode: executing build and publish commands");
+            if let Err(e) = builder::execute_command(&config.build, &config.webhook).await {
+                error!("Build failed: {}", e);
+                return Err(e.into());
+            }
+            
+            if let Err(e) = builder::execute_command(&config.publish, &config.webhook).await {
+                error!("Publish failed: {}", e);
+                return Err(e.into());
+            }
+            return Ok(());
+        }
+
         match git::check_and_pull(
             config.repository.to_str().unwrap(),
             &config.branch,
