@@ -53,6 +53,20 @@ pub async fn check_and_pull(repo_path: &str, branch: &str, webhook: &WebhookConf
         // Set the pulling flag
         IS_PULLING.store(true, Ordering::SeqCst);
         
+        // Reset all local changes before pulling
+        let reset_output = Command::new("git")
+            .current_dir(repo_path)
+            .args(["reset", "--hard"])
+            .output()?;
+
+        if !reset_output.status.success() {
+            let error_msg = format!("Git reset failed: {}", String::from_utf8_lossy(&reset_output.stderr));
+            error!("{}", error_msg);
+            crate::webhook::send_webhook(webhook, "ERROR", &error_msg).await;
+            IS_PULLING.store(false, Ordering::SeqCst);
+            return Err(anyhow::anyhow!(error_msg));
+        }
+
         // Updates available, execute pull
         let pull_output = Command::new("git")
             .current_dir(repo_path)
